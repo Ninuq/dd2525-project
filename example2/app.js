@@ -6,9 +6,11 @@ const {randomFillSync,} = await import("crypto");
 
         function encrypt(_key,_iv,_messages){
             var encoder = new TextEncoder();
-            aes.init(_key,_iv)
+            
             var _ret_messages = [];
-            for(var _message of _messages){
+            for(var i = 0; i < _messages.length; i++){
+                aes.init(_key,_iv[i])
+                var _message = _messages[i];
                 var _enc_message = aes.encrypt(encoder.encode(_message))
                 _ret_messages.push(_enc_message)
                 console.log("encrypted: \'" + _message + "\'   using key: [" + _key+"]")
@@ -18,9 +20,11 @@ const {randomFillSync,} = await import("crypto");
         
         function decrypt(_key,_iv,_enc_messages){
             var decoder = new TextDecoder();
-            aes.init(_key,_iv)
+            
             var _ret_messages = [];
-            for(var _enc_message of _enc_messages){
+            for (var i = 0; i<_enc_messages.length;i++){
+                aes.init(_key,_iv[i])
+                var _enc_message = _enc_messages[i];
                 var _dec_message = aes.decrypt(_enc_message)
                 _ret_messages.push(decoder.decode(_dec_message))
                 console.log("decrypted: \'" + decoder.decode(_dec_message) + "\'   using key: [" + _key+"]")
@@ -30,7 +34,9 @@ const {randomFillSync,} = await import("crypto");
 
     //init key and init vector for user1
     var key = randomFillSync(new Uint8Array(16))
-    var iv = randomFillSync(new Uint8Array(16))
+    var iv1 = randomFillSync(new Uint8Array(16))
+    var iv2 = randomFillSync(new Uint8Array(16))
+    var ivs = [iv1,iv2]
 
     
     // fill key and init vector with random bytes
@@ -44,22 +50,22 @@ const {randomFillSync,} = await import("crypto");
     var texts = [text1,text2]
     
     //user 1 encrypt a texts
-    var enc_texts = encrypt(key,iv,texts)
+    var enc_texts = encrypt(key,ivs,texts)
         //encrypts another text
 
     //only decrypts text1
     var enc_text1 = [enc_texts[0]]
-    var dec_text1 = decrypt(key,iv,enc_text1)
+    var iv1_list = [iv1]
+    var dec_text1 = decrypt(key,ivs,enc_text1)
 
 
 
     //user2
-    /*  user2 has managed to get a hold of an encrypted text enc_text2
-        user2 has no information regarding the key or iv, just the knowledge that user1 
+    /*  user2 has managed to get a hold of both encrypted texts and their initialization vectors.
+        User2 has no information regarding the key, just the knowledge that user1 
         was the last person to perform decryption
     */
-    var enc_text2 = [enc_texts[1]]
-    var dec_text2 = decrypt("","",enc_text2)
+    var dec_text2 = decrypt("",ivs,enc_texts)
 
 
 
