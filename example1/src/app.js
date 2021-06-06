@@ -4,19 +4,6 @@ const app = express()
 const m = require('./function.js')
 const port = 3000
 
-/*
-{headers:{'Content-Type':'application/wasm'}}
-var memory = new WebAssembly.Memory({initial: 1,maximum: 10})
-
-WebAssembly.instantiateStreaming(fetch('function.wasm'),{ js: { mem: memory }} )
-.then(results => {
-  // add code here
-  results.instance.exports.sum()
-});
-*/
-
-
-
 // for parsing form data
 const bodyParser = require('body-parser');
 const { stringToUTF8, UTF8ToString } = require('./function.js');
@@ -35,13 +22,11 @@ app.post('/',(req,res) =>{
     m.stringToUTF8("startstring",outPtr,10)
     m.stringToUTF8(message,messagePtr,message.length+1)
 
-    sum = m.cwrap('sum', 'number', ['number','number'])
-   var acopy = sum(messagePtr)
-   console.log(acopy-outPtr)
-    var r = m.UTF8ToString(acopy)
-    console.log(r)
-
-    res.send(r)
+    // import c function
+    handle_message = m.cwrap('handle_message', 'number', ['number','number'])
+    var static_message = handle_message(messagePtr)
+    
+    res.send(m.UTF8ToString(static_message))
 })
 
 
