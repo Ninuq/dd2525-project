@@ -1,12 +1,12 @@
 
 const express = require('express')
 const app = express()
-const m = require('./function.js')
+const m = require('./wasm/overflow')
 const port = 3000
 
 // for parsing form data
 const bodyParser = require('body-parser');
-const { stringToUTF8, UTF8ToString } = require('./function.js');
+const { stringToUTF8, UTF8ToString } = require('./wasm/overflow.js');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/',(req,res) =>{
@@ -19,7 +19,6 @@ app.post('/',(req,res) =>{
     console.log("msg:",message)
 
     var messagePtr = m._malloc(message.length+1)
-    m.stringToUTF8("startstring",outPtr,10)
     m.stringToUTF8(message,messagePtr,message.length+1)
 
     // import c function
